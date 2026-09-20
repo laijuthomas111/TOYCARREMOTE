@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Toy Car Tilt Remote</title>
+<style>
+body{margin:0;background:#0b1020;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif;display:flex;justify-content:center}
+main{width:min(680px,100%);padding:20px;box-sizing:border-box}
+.card{background:#151b2f;border:1px solid #2d3756;border-radius:18px;padding:16px;margin-bottom:14px}
+.status{font-size:2rem;font-weight:800;text-align:center;padding:24px 10px;border-radius:16px;background:#27324d}
+.status.go{background:#14532d;color:#dcfce7}.status.stop{background:#7f1d1d;color:#fee2e2}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+button{min-height:52px;border:0;border-radius:14px;font-size:1rem;font-weight:700;padding:12px 14px;background:#2563eb;color:#fff}
+button.secondary{background:#334155}button.danger{background:#b91c1c}
+input[type=range]{width:100%}.small{color:#aeb9d1;font-size:.9rem;line-height:1.4}
+.numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.num{background:#0f172a;padding:10px;border-radius:12px;text-align:center}.num b{display:block;font-size:1.2rem;margin-top:4px}
+</style>
+</head>
+<body>
+<main>
+<h1>Toy Car Tilt Remote</h1>
+
+<section class="card">
+<div id="driveState" class="status">NOT STARTED</div>
+<div class="grid">
+<button id="startBtn">Start Tilt Control</button>
+<button id="neutralBtn" class="secondary">Set Neutral</button>
+</div>
+<div class="grid">
+<button id="stopBtn" class="danger">EMERGENCY STOP</button>
+<button id="testBtn" class="secondary">Test Forward</button>
+</div>
+</section>
+
+<section class="card">
+<label>Forward threshold: <span id="thresholdValue">12</span>°</label>
+<input id="threshold" type="range" min="5" max="35" value="12">
+<p class="small">Hold the phone normally, tap Set Neutral, then tilt the top of the phone forward.</p>
+</section>
+
+<section class="card">
+<strong>Phone orientation</strong>
+<div class="numbers">
+<div class="num">Beta<b id="beta">0.0°</b></div>
+<div class="num">Gamma<b id="gamma">0.0°</b></div>
+<div class="num">Forward Δ<b id="delta">0.0°</b></div>
+</div>
+</section>
+
+<section class="card">
+<strong>ESP32 output simulation</strong>
+<p id="command" class="small">D23 = LOW</p>
+<p class="small">This first version proves the phone tilt logic. It does not transmit to the ESP32 yet.</p>
+</section>
+
+<script>
+(() => {
+ const $=id=>document.getElementById(id);
+ const startBtn=$('startBtn'), neutralBtn=$('neutralBtn'), stopBtn=$('stopBtn'), testBtn=$('testBtn');
+ const threshold=$('threshold'), thresholdValue=$('thresholdValue'), driveState=$('driveState');
+ const betaEl=$('beta'), gammaEl=$('gamma'), deltaEl=$('delta'), commandEl=$('command');
+ let enabled=false, stopped=false, neutralBeta=0, beta=0, gamma=0, haveSensor=false;
+
+ function setForward(on){
+   if(stopped) on=false;
+   driveState.textContent=on?'FORWARD':(stopped?'STOPPED':'NEUTRAL');
+   driveState.classList.toggle('go',on);
+   driveState.classList.toggle('stop',stopped);
+   commandEl.textContent='D23 = '+(on?'HIGH':'LOW');
+ }
+ function update(){
+   const delta=neutralBeta-beta;
+   deltaEl.textContent=delta.toFixed(1)+'°';
+   if(!enabled||!haveSensor||stopped){setForward(false);return;}
+   setForward(delta>=Number(threshold.value));
+ }
+ function onOrientation(e){
+   if(typeof e.beta!=='number') return;
+   haveSensor=true; beta=e.beta; gamma=typeof e.gamma==='number'?e.gamma:0;
+   betaEl.textContent=beta.toFixed(1)+'°'; gammaEl.textContent=gamma.toFixed(1)+'°';
+   update();
+ }
+ async function start(){
+   try{
+     if(typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function'){
+       const r=await DeviceOrientationEvent.requestPermission();
+       if(r!=='granted'){driveState.textContent='PERMISSION DENIED';driveState.classList.add('stop');return;}
+     }
+     window.addEventListener('deviceorientation',onOrientation,true);
+     enabled=true; stopped=false; startBtn.textContent='Tilt Control Active'; update();
+   }catch(err){driveState.textContent='SENSOR ERROR';driveState.classList.add('stop');commandEl.textContent=String(err);}
+ }
+ startBtn.addEventListener('click',start);
+ neutralBtn.addEventListener('click',()=>{neutralBeta=beta;stopped=false;update();});
+ stopBtn.addEventListener('click',()=>{stopped=true;setForward(false);});
+ testBtn.addEventListener('pointerdown',()=>{stopped=false;setForward(true);});
+ ['pointerup','pointercancel','pointerleave'].forEach(ev=>testBtn.addEventListener(ev,()=>setForward(false)));
+ threshold.addEventListener('input',()=>{thresholdValue.textContent=threshold.value;update();});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){stopped=true;setForward(false);}});
+ if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+</script>
+</main>
+</body>
+</html>
