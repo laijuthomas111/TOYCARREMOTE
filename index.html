@@ -194,7 +194,7 @@ Test Forward
 <section class="card">
 
 <label>
-Forward threshold:
+Tilt threshold:
 <span id="thresholdValue">12</span>°
 </label>
 
@@ -208,7 +208,7 @@ Forward threshold:
 
 <p class="small">
 Hold the phone normally, tap Set Neutral,
-then tilt the top of the phone forward.
+then tilt one way for Forward and the opposite way for Backward.
 </p>
 
 </section>
@@ -233,7 +233,7 @@ Gamma
 </div>
 
 <div class="num">
-Forward Δ
+Tilt Δ
 <b id="delta">0.0°</b>
 </div>
 
@@ -262,11 +262,11 @@ CONNECTING...
   id="command"
   class="small"
 >
-GPIO23 = LOW
+GPIO23 = LOW | GPIO22 = LOW
 </p>
 
 <p class="small">
-Phone tilt → MQTT → ESP32 → GPIO23 → PC817 → LED
+Phone tilt → MQTT → ESP32 → GPIO23/GPIO22 → PC817 → remote
 </p>
 
 </section>
@@ -392,6 +392,11 @@ mqttClient.on(
       "0"
     );
 
+    mqttClient.publish(
+      backwardTopic,
+      "0"
+    );
+
   }
 );
 
@@ -450,68 +455,115 @@ mqttClient.on(
 
 
 // =================================================
-// SEND FORWARD COMMAND
+// SEND DRIVE COMMANDS
 // =================================================
 
-function sendForward(on) {
+function sendDrive(forward, backward) {
 
   if (!mqttClient.connected) {
     return;
   }
 
+  // Safety: never command both directions at once.
+  if (forward && backward) {
+    forward = false;
+    backward = false;
+  }
+
   mqttClient.publish(
     forwardTopic,
-    on ? "1" : "0"
+    forward ? "1" : "0"
   );
 
+  mqttClient.publish(
+    backwardTopic,
+    backward ? "1" : "0"
+  );
 }
 
 
 // =================================================
-// SET FORWARD STATE
+// SET DRIVE STATE ON PHONE + ESP32
 // =================================================
 
-function setForward(on) {
+function setDriveState(forward, backward) {
 
   if (stopped) {
-    on = false;
+    forward = false;
+    backward = false;
   }
 
+  // Safety: never allow both directions together.
+  if (forward && backward) {
+    forward = false;
+    backward = false;
+  }
 
-  driveState.textContent =
-    on
-      ? "FORWARD"
-      : (
-          stopped
-            ? "STOPPED"
-            : "NEUTRAL"
-        );
-
-
-  driveState.classList.toggle(
+  driveState.classList.remove(
     "go",
-    on
+    "stop"
   );
 
+  if (stopped) {
 
-  driveState.classList.toggle(
-    "stop",
-    stopped
-  );
+    driveState.textContent =
+      "STOPPED";
 
-
-  commandEl.textContent =
-    "GPIO23 = " +
-    (
-      on
-        ? "HIGH"
-        : "LOW"
+    driveState.classList.add(
+      "stop"
     );
 
+    commandEl.textContent =
+      "GPIO23 = LOW | GPIO22 = LOW";
 
-  // Send to real ESP32
-  sendForward(on);
+  } else if (forward) {
 
+    driveState.textContent =
+      "FORWARD";
+
+    driveState.classList.add(
+      "go"
+    );
+
+    commandEl.textContent =
+      "GPIO23 = HIGH | GPIO22 = LOW";
+
+  } else if (backward) {
+
+    driveState.textContent =
+      "BACKWARD";
+
+    driveState.classList.add(
+      "go"
+    );
+
+    commandEl.textContent =
+      "GPIO23 = LOW | GPIO22 = HIGH";
+
+  } else {
+
+    driveState.textContent =
+      "NEUTRAL";
+
+    commandEl.textContent =
+      "GPIO23 = LOW | GPIO22 = LOW";
+  }
+
+  // Send both directions to the ESP32.
+  sendDrive(
+    forward,
+    backward
+  );
+}
+
+
+// Keep the existing Test Forward button working.
+function setForward(on) {
+
+  setDriveState(
+    on,
+    false
+  );
 }
 
 
@@ -524,6 +576,10 @@ function update() {
   const delta =
     neutralBeta - beta;
 
+  const limit =
+    Number(
+      threshold.value
+    );
 
   deltaEl.textContent =
     delta.toFixed(1) + "°";
@@ -535,22 +591,39 @@ function update() {
     stopped
   ) {
 
-    setForward(false);
+    setDriveState(
+      false,
+      false
+    );
 
     return;
   }
 
 
-  const forward =
-    delta >=
-    Number(
-      threshold.value
+  if (delta >= limit) {
+
+    // Tilt one way = Forward
+    setDriveState(
+      true,
+      false
     );
 
+  } else if (delta <= -limit) {
 
-  setForward(
-    forward
-  );
+    // Tilt the opposite way = Backward
+    setDriveState(
+      false,
+      true
+    );
+
+  } else {
+
+    // Near the neutral position
+    setDriveState(
+      false,
+      false
+    );
+  }
 
 }
 
@@ -720,7 +793,8 @@ stopBtn.addEventListener(
     stopped =
       true;
 
-    setForward(
+    setDriveState(
+      false,
       false
     );
 
@@ -858,7 +932,8 @@ document.addEventListener(
       stopped =
         true;
 
-      setForward(
+      setDriveState(
+        false,
         false
       );
 
