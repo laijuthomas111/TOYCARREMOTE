@@ -797,40 +797,50 @@ threshold.addEventListener(
 //
 // =================================================
 
-setInterval(
-  () => {
+setInterval(() => {
 
-    if (
-      !mqttClient.connected
-    ) {
+  if (!mqttClient.connected) {
+    return;
+  }
 
-      return;
+  const delta =
+    neutralBeta - beta;
+
+  const limit =
+    Number(threshold.value);
+
+  let forward = false;
+  let backward = false;
+
+  if (
+    enabled &&
+    !stopped &&
+    haveSensor
+  ) {
+
+    if (delta >= limit) {
+      forward = true;
+      backward = false;
     }
 
+    else if (delta <= -limit) {
+      forward = false;
+      backward = true;
+    }
 
-    const forward =
-      enabled &&
-      !stopped &&
-      haveSensor &&
-      (
-        neutralBeta - beta >=
-        Number(
-          threshold.value
-        )
-      );
+  }
 
+  mqttClient.publish(
+    forwardTopic,
+    forward ? "1" : "0"
+  );
 
-    mqttClient.publish(
-      forwardTopic,
-      forward
-        ? "1"
-        : "0"
-    );
+  mqttClient.publish(
+    backwardTopic,
+    backward ? "1" : "0"
+  );
 
-  },
-
-  250
-);
+}, 250);
 
 
 // =================================================
