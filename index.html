@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
 <meta charset="utf-8">
 
 <meta
@@ -11,10 +12,18 @@
 
 <meta name="theme-color" content="#111827">
 
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link
+  rel="manifest"
+  href="manifest.webmanifest"
+>
+
+<link
+  rel="apple-touch-icon"
+  href="icon-192.png"
+>
 
 <title>Toy Car Tilt Remote</title>
+
 
 <style>
 
@@ -27,11 +36,13 @@ body {
   justify-content:center;
 }
 
+
 main {
   width:min(680px,100%);
   padding:20px;
   box-sizing:border-box;
 }
+
 
 .card {
   background:#151b2f;
@@ -40,6 +51,7 @@ main {
   padding:16px;
   margin-bottom:14px;
 }
+
 
 .status {
   font-size:1.8rem;
@@ -50,15 +62,18 @@ main {
   background:#27324d;
 }
 
+
 .status.go {
   background:#14532d;
   color:#dcfce7;
 }
 
+
 .status.stop {
   background:#7f1d1d;
   color:#fee2e2;
 }
+
 
 .grid {
   display:grid;
@@ -66,6 +81,7 @@ main {
   gap:12px;
   margin-top:14px;
 }
+
 
 button {
   min-height:52px;
@@ -78,27 +94,33 @@ button {
   color:#fff;
 }
 
+
 button.secondary {
   background:#334155;
 }
+
 
 button.danger {
   background:#b91c1c;
 }
 
+
 button.speed {
   background:#7c3aed;
 }
 
+
 input[type=range] {
   width:100%;
 }
+
 
 .small {
   color:#aeb9d1;
   font-size:.9rem;
   line-height:1.4;
 }
+
 
 .numbers {
   display:grid;
@@ -107,6 +129,7 @@ input[type=range] {
   margin-top:10px;
 }
 
+
 .num {
   background:#0f172a;
   padding:10px;
@@ -114,21 +137,25 @@ input[type=range] {
   text-align:center;
 }
 
+
 .num b {
   display:block;
   font-size:1.05rem;
   margin-top:4px;
 }
 
+
 .connected {
   color:#86efac;
   font-weight:700;
 }
 
+
 .disconnected {
   color:#fca5a5;
   font-weight:700;
 }
+
 
 .command-box {
   background:#0f172a;
@@ -139,7 +166,9 @@ input[type=range] {
 }
 
 </style>
+
 </head>
+
 
 <body>
 
@@ -148,7 +177,9 @@ input[type=range] {
 <h1>Toy Car Tilt Remote</h1>
 
 
+
 <section class="card">
+
 
 <div
   id="driveState"
@@ -156,6 +187,7 @@ input[type=range] {
 >
 NOT STARTED
 </div>
+
 
 
 <div class="grid">
@@ -172,6 +204,7 @@ Set Neutral
 </button>
 
 </div>
+
 
 
 <div class="grid">
@@ -193,6 +226,7 @@ SPEED +
 </div>
 
 
+
 <div class="grid">
 
 <button
@@ -211,16 +245,24 @@ Resume
 
 </div>
 
+
 </section>
 
 
 
 <section class="card">
 
+
 <label>
+
 Forward / Backward threshold:
-<span id="fbThresholdValue">12</span>°
+
+<span id="fbThresholdValue">
+12
+</span>°
+
 </label>
+
 
 <input
   id="fbThreshold"
@@ -235,9 +277,15 @@ Forward / Backward threshold:
 
 
 <label>
+
 Left / Right threshold:
-<span id="lrThresholdValue">12</span>°
+
+<span id="lrThresholdValue">
+12
+</span>°
+
 </label>
+
 
 <input
   id="lrThreshold"
@@ -250,13 +298,16 @@ Left / Right threshold:
 
 <p class="small">
 
-Hold the phone normally and press Set Neutral.
+Hold the phone normally and tap Set Neutral.
 
 Tilt forward/backward for movement.
 
 Tilt left/right for steering.
 
+Hold BRAKE to apply brake.
+
 </p>
+
 
 </section>
 
@@ -264,12 +315,14 @@ Tilt left/right for steering.
 
 <section class="card">
 
+
 <strong>
 Phone orientation
 </strong>
 
 
 <div class="numbers">
+
 
 <div class="num">
 
@@ -314,13 +367,16 @@ L/R Δ
 
 </div>
 
+
 </div>
+
 
 </section>
 
 
 
 <section class="card">
+
 
 <strong>
 ESP32 connection
@@ -359,9 +415,10 @@ BRAKE 0
 
 <p class="small">
 
-Phone → MQTT → ESP32 → PC817 → Original Remote
+Phone → MQTT → ESP32 → PC817 → original remote
 
 </p>
+
 
 </section>
 
@@ -450,8 +507,10 @@ const mqttStatus =
 let enabled =
   false;
 
+
 let stopped =
   false;
+
 
 let braking =
   false;
@@ -464,6 +523,7 @@ let haveSensor =
 let neutralBeta =
   0;
 
+
 let neutralGamma =
   0;
 
@@ -471,23 +531,27 @@ let neutralGamma =
 let beta =
   0;
 
+
 let gamma =
   0;
 
 
 
 // ======================================
-// CURRENT MOVEMENT STATE
+// CURRENT OUTPUT STATE
 // ======================================
 
 let currentForward =
   false;
 
+
 let currentBackward =
   false;
 
+
 let currentLeft =
   false;
+
 
 let currentRight =
   false;
@@ -505,17 +569,22 @@ const baseTopic =
 const forwardTopic =
   baseTopic + "/forward";
 
+
 const backwardTopic =
   baseTopic + "/backward";
+
 
 const leftTopic =
   baseTopic + "/left";
 
+
 const rightTopic =
   baseTopic + "/right";
 
+
 const brakeTopic =
   baseTopic + "/brake";
+
 
 const speedTopic =
   baseTopic + "/speed";
@@ -565,6 +634,7 @@ mqttClient.on(
 
   () => {
 
+
     mqttStatus.textContent =
       "CONNECTED";
 
@@ -591,6 +661,7 @@ mqttClient.on(
 
   () => {
 
+
     mqttStatus.textContent =
       "RECONNECTING...";
 
@@ -613,6 +684,7 @@ mqttClient.on(
   "close",
 
   () => {
+
 
     mqttStatus.textContent =
       "DISCONNECTED";
@@ -637,6 +709,7 @@ mqttClient.on(
 
   error => {
 
+
     console.log(
       "MQTT error:",
       error
@@ -657,13 +730,14 @@ mqttClient.on(
 
 
 // ======================================
-// PUBLISH ONE COMMAND
+// SEND ONE MQTT COMMAND
 // ======================================
 
 function publish(
   topic,
   on
 ) {
+
 
   if (
     !mqttClient.connected
@@ -693,6 +767,7 @@ function publish(
 // ======================================
 
 function publishMotion() {
+
 
   publish(
     forwardTopic,
@@ -728,10 +803,11 @@ function publishMotion() {
 
 
 // ======================================
-// TURN EVERYTHING OFF
+// EVERYTHING OFF
 // ======================================
 
 function publishAllOff() {
+
 
   publish(
     forwardTopic,
@@ -784,58 +860,27 @@ function setMotionState(
 ) {
 
 
-  // Brake or emergency stop
-  // kills movement.
+  // ==================================
+  // BRAKE / STOP OVERRIDE
+  // ==================================
 
   if (
     stopped ||
     braking
   ) {
 
-    forward =
-      false;
-
-    backward =
-      false;
-
-    left =
-      false;
-
-    right =
-      false;
-
-  }
-
-
-
-  // Never allow Forward
-  // and Backward together.
-
-  if (
-    forward &&
-    backward
-  ) {
 
     forward =
       false;
 
+
     backward =
       false;
 
-  }
-
-
-
-  // Never allow Left
-  // and Right together.
-
-  if (
-    left &&
-    right
-  ) {
 
     left =
       false;
+
 
     right =
       false;
@@ -845,7 +890,45 @@ function setMotionState(
 
 
   // ==================================
-  // LAG REDUCTION
+  // SAFETY INTERLOCK
+  // ==================================
+
+  if (
+    forward &&
+    backward
+  ) {
+
+
+    forward =
+      false;
+
+
+    backward =
+      false;
+
+  }
+
+
+
+  if (
+    left &&
+    right
+  ) {
+
+
+    left =
+      false;
+
+
+    right =
+      false;
+
+  }
+
+
+
+  // ==================================
+  // CHECK WHETHER DIRECTION CHANGED
   // ==================================
 
   const stateChanged =
@@ -860,16 +943,21 @@ function setMotionState(
 
 
 
-  // Store new state
+  // ==================================
+  // SAVE STATE
+  // ==================================
 
   currentForward =
     forward;
 
+
   currentBackward =
     backward;
 
+
   currentLeft =
     left;
+
 
   currentRight =
     right;
@@ -877,7 +965,7 @@ function setMotionState(
 
 
   // ==================================
-  // PHONE DISPLAY
+  // DISPLAY STATE
   // ==================================
 
   driveState.classList.remove(
@@ -890,6 +978,7 @@ function setMotionState(
   if (
     stopped
   ) {
+
 
     driveState.textContent =
       "STOPPED";
@@ -906,6 +995,7 @@ function setMotionState(
     braking
   ) {
 
+
     driveState.textContent =
       "BRAKE";
 
@@ -918,6 +1008,7 @@ function setMotionState(
 
 
   else {
+
 
     const parts =
       [];
@@ -972,6 +1063,7 @@ function setMotionState(
       parts.length === 0
     ) {
 
+
       driveState.textContent =
         "NEUTRAL";
 
@@ -979,6 +1071,7 @@ function setMotionState(
 
 
     else {
+
 
       driveState.textContent =
         parts.join(
@@ -1044,13 +1137,13 @@ function setMotionState(
 
 
   // ==================================
-  // SEND IMMEDIATELY ONLY
-  // WHEN STATE CHANGES
+  // SEND ONLY WHEN STATE CHANGES
   // ==================================
 
   if (
     stateChanged
   ) {
+
 
     publishMotion();
 
@@ -1160,9 +1253,12 @@ function update() {
   // ==================================
 
   if (
+
     fbDelta >=
     fbLimit
+
   ) {
+
 
     forward =
       true;
@@ -1176,6 +1272,7 @@ function update() {
     -fbLimit
 
   ) {
+
 
     backward =
       true;
@@ -1195,6 +1292,7 @@ function update() {
 
   ) {
 
+
     left =
       true;
 
@@ -1207,6 +1305,7 @@ function update() {
     lrLimit
 
   ) {
+
 
     right =
       true;
@@ -1229,7 +1328,7 @@ function update() {
 
 
 // ======================================
-// PHONE ORIENTATION
+// PHONE ORIENTATION EVENT
 // ======================================
 
 function onOrientation(e) {
@@ -1241,6 +1340,7 @@ function onOrientation(e) {
     "number"
 
   ) {
+
 
     return;
 
@@ -1470,16 +1570,33 @@ stopBtn.addEventListener(
 
 
 
+    currentForward =
+      false;
+
+
+    currentBackward =
+      false;
+
+
+    currentLeft =
+      false;
+
+
+    currentRight =
+      false;
+
+
+
+    publishAllOff();
+
+
+
     setMotionState(
       false,
       false,
       false,
       false
     );
-
-
-
-    publishAllOff();
 
   }
 
@@ -1515,8 +1632,13 @@ resumeBtn.addEventListener(
 
 
 // ======================================
-// BRAKE BUTTON
+// BRAKE
 // ======================================
+//
+// IMPORTANT:
+// Brake is handled separately so tilt
+// updates cannot immediately cancel it.
+//
 
 brakeBtn.addEventListener(
 
@@ -1528,6 +1650,7 @@ brakeBtn.addEventListener(
     event.preventDefault();
 
 
+
     stopped =
       false;
 
@@ -1537,24 +1660,87 @@ brakeBtn.addEventListener(
 
 
 
-    setMotionState(
-      false,
-      false,
-      false,
+    // Immediately kill movement
+
+    currentForward =
+      false;
+
+
+    currentBackward =
+      false;
+
+
+    currentLeft =
+      false;
+
+
+    currentRight =
+      false;
+
+
+
+    publish(
+      forwardTopic,
       false
     );
 
+
+    publish(
+      backwardTopic,
+      false
+    );
+
+
+    publish(
+      leftTopic,
+      false
+    );
+
+
+    publish(
+      rightTopic,
+      false
+    );
+
+
+
+    // Brake ON
 
     publish(
       brakeTopic,
       true
     );
 
+
+
+    driveState.textContent =
+      "BRAKE";
+
+
+    driveState.classList.remove(
+      "go"
+    );
+
+
+    driveState.classList.add(
+      "stop"
+    );
+
+
+
+    commandEl.textContent =
+
+      "FWD 0 | BACK 0 | LEFT 0 | RIGHT 0 | BRAKE 1";
+
   }
 
 );
 
 
+
+// ======================================
+// BRAKE RELEASE
+// ======================================
 
 [
   "pointerup",
@@ -1578,10 +1764,12 @@ brakeBtn.addEventListener(
           false;
 
 
+
         publish(
           brakeTopic,
           false
         );
+
 
 
         update();
@@ -1600,7 +1788,9 @@ brakeBtn.addEventListener(
 // SPEED +
 // ======================================
 //
-// One tap = one speed-cycle press.
+// Each tap gives one command.
+// Arduino ESP32 turns GPIO27 on
+// briefly and then turns it off.
 //
 
 speedBtn.addEventListener(
@@ -1617,6 +1807,7 @@ speedBtn.addEventListener(
       !mqttClient.connected
 
     ) {
+
 
       return;
 
@@ -1704,11 +1895,9 @@ lrThreshold.addEventListener(
 // MQTT HEARTBEAT
 // ======================================
 //
-// Only every 250 ms.
-// This keeps ESP32 failsafe alive.
-//
-// Sensor movement itself does NOT
-// flood MQTT anymore.
+// Keeps the ESP32 failsafe alive.
+// Brake stays ON while the Brake
+// button is physically being held.
 //
 
 setInterval(
@@ -1720,9 +1909,11 @@ setInterval(
       !mqttClient.connected
     ) {
 
+
       return;
 
     }
+
 
 
     publishMotion();
@@ -1736,7 +1927,7 @@ setInterval(
 
 
 // ======================================
-// APP HIDDEN = STOP
+// APP HIDDEN = STOP EVERYTHING
 // ======================================
 
 document.addEventListener(
@@ -1759,6 +1950,26 @@ document.addEventListener(
         false;
 
 
+      currentForward =
+        false;
+
+
+      currentBackward =
+        false;
+
+
+      currentLeft =
+        false;
+
+
+      currentRight =
+        false;
+
+
+
+      publishAllOff();
+
+
 
       setMotionState(
         false,
@@ -1766,10 +1977,6 @@ document.addEventListener(
         false,
         false
       );
-
-
-
-      publishAllOff();
 
     }
 
@@ -1809,6 +2016,7 @@ if (
 })();
 
 </script>
+
 
 </main>
 
