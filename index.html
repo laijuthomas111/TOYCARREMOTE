@@ -1,106 +1,1817 @@
 <!doctype html>
 <html lang="en">
+
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
+
 <meta name="theme-color" content="#111827">
+
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
+
 <title>Toy Car Tilt Remote</title>
+
 <style>
-body{margin:0;background:#0b1020;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif;display:flex;justify-content:center}main{width:min(680px,100%);padding:20px;box-sizing:border-box}.card{background:#151b2f;border:1px solid #2d3756;border-radius:18px;padding:16px;margin-bottom:14px}.status{font-size:1.8rem;font-weight:800;text-align:center;padding:22px 10px;border-radius:16px;background:#27324d}.status.go{background:#14532d;color:#dcfce7}.status.stop{background:#7f1d1d;color:#fee2e2}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}button{min-height:52px;border:0;border-radius:14px;font-size:1rem;font-weight:700;padding:12px 14px;background:#2563eb;color:#fff}button.secondary{background:#334155}button.danger{background:#b91c1c}button.speed{background:#7c3aed}input[type=range]{width:100%}.small{color:#aeb9d1;font-size:.9rem;line-height:1.4}.numbers{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.num{background:#0f172a;padding:10px;border-radius:12px;text-align:center}.num b{display:block;font-size:1.05rem;margin-top:4px}.connected{color:#86efac;font-weight:700}.disconnected{color:#fca5a5;font-weight:700}.command-box{background:#0f172a;border-radius:12px;padding:12px;margin-top:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem}
+
+body {
+  margin:0;
+  background:#0b1020;
+  color:#f8fafc;
+  font-family:system-ui,-apple-system,sans-serif;
+  display:flex;
+  justify-content:center;
+}
+
+main {
+  width:min(680px,100%);
+  padding:20px;
+  box-sizing:border-box;
+}
+
+.card {
+  background:#151b2f;
+  border:1px solid #2d3756;
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:14px;
+}
+
+.status {
+  font-size:1.8rem;
+  font-weight:800;
+  text-align:center;
+  padding:22px 10px;
+  border-radius:16px;
+  background:#27324d;
+}
+
+.status.go {
+  background:#14532d;
+  color:#dcfce7;
+}
+
+.status.stop {
+  background:#7f1d1d;
+  color:#fee2e2;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:14px;
+}
+
+button {
+  min-height:52px;
+  border:0;
+  border-radius:14px;
+  font-size:1rem;
+  font-weight:700;
+  padding:12px 14px;
+  background:#2563eb;
+  color:#fff;
+}
+
+button.secondary {
+  background:#334155;
+}
+
+button.danger {
+  background:#b91c1c;
+}
+
+button.speed {
+  background:#7c3aed;
+}
+
+input[type=range] {
+  width:100%;
+}
+
+.small {
+  color:#aeb9d1;
+  font-size:.9rem;
+  line-height:1.4;
+}
+
+.numbers {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.num {
+  background:#0f172a;
+  padding:10px;
+  border-radius:12px;
+  text-align:center;
+}
+
+.num b {
+  display:block;
+  font-size:1.05rem;
+  margin-top:4px;
+}
+
+.connected {
+  color:#86efac;
+  font-weight:700;
+}
+
+.disconnected {
+  color:#fca5a5;
+  font-weight:700;
+}
+
+.command-box {
+  background:#0f172a;
+  border-radius:12px;
+  padding:12px;
+  margin-top:10px;
+  font-family:monospace;
+}
+
 </style>
 </head>
+
 <body>
+
 <main>
+
 <h1>Toy Car Tilt Remote</h1>
+
+
 <section class="card">
-<div id="driveState" class="status">NOT STARTED</div>
-<div class="grid"><button id="startBtn">Start Tilt Control</button><button id="neutralBtn" class="secondary">Set Neutral</button></div>
-<div class="grid"><button id="brakeBtn" class="danger">BRAKE</button><button id="speedBtn" class="speed">SPEED +</button></div>
-<div class="grid"><button id="stopBtn" class="danger">EMERGENCY STOP</button><button id="resumeBtn" class="secondary">Resume</button></div>
-</section>
-<section class="card">
-<label>Forward / Backward threshold: <span id="fbThresholdValue">12</span>°</label>
-<input id="fbThreshold" type="range" min="5" max="35" value="12">
-<br><br>
-<label>Left / Right threshold: <span id="lrThresholdValue">12</span>°</label>
-<input id="lrThreshold" type="range" min="5" max="35" value="12">
-<p class="small">Hold the phone in your normal driving position and tap Set Neutral. Tilt forward/backward for motion and tilt left/right for steering.</p>
-</section>
-<section class="card">
-<strong>Phone orientation</strong>
-<div class="numbers">
-<div class="num">Beta<b id="beta">0.0°</b></div>
-<div class="num">Gamma<b id="gamma">0.0°</b></div>
-<div class="num">F/B Δ<b id="fbDelta">0.0°</b></div>
-<div class="num">L/R Δ<b id="lrDelta">0.0°</b></div>
+
+<div
+  id="driveState"
+  class="status"
+>
+NOT STARTED
 </div>
+
+
+<div class="grid">
+
+<button id="startBtn">
+Start Tilt Control
+</button>
+
+<button
+  id="neutralBtn"
+  class="secondary"
+>
+Set Neutral
+</button>
+
+</div>
+
+
+<div class="grid">
+
+<button
+  id="brakeBtn"
+  class="danger"
+>
+BRAKE
+</button>
+
+<button
+  id="speedBtn"
+  class="speed"
+>
+SPEED +
+</button>
+
+</div>
+
+
+<div class="grid">
+
+<button
+  id="stopBtn"
+  class="danger"
+>
+EMERGENCY STOP
+</button>
+
+<button
+  id="resumeBtn"
+  class="secondary"
+>
+Resume
+</button>
+
+</div>
+
 </section>
+
+
+
 <section class="card">
-<strong>ESP32 connection</strong>
-<p>MQTT: <span id="mqttStatus" class="disconnected">CONNECTING...</span></p>
-<div id="command" class="command-box">FWD 0 | BACK 0 | LEFT 0 | RIGHT 0 | BRAKE 0</div>
-<p class="small">Phone tilt → MQTT → ESP32 → PC817s → original toy-car remote buttons</p>
+
+<label>
+Forward / Backward threshold:
+<span id="fbThresholdValue">12</span>°
+</label>
+
+<input
+  id="fbThreshold"
+  type="range"
+  min="5"
+  max="35"
+  value="12"
+>
+
+
+<br><br>
+
+
+<label>
+Left / Right threshold:
+<span id="lrThresholdValue">12</span>°
+</label>
+
+<input
+  id="lrThreshold"
+  type="range"
+  min="5"
+  max="35"
+  value="12"
+>
+
+
+<p class="small">
+
+Hold the phone normally and press Set Neutral.
+
+Tilt forward/backward for movement.
+
+Tilt left/right for steering.
+
+</p>
+
 </section>
+
+
+
+<section class="card">
+
+<strong>
+Phone orientation
+</strong>
+
+
+<div class="numbers">
+
+<div class="num">
+
+Beta
+
+<b id="beta">
+0.0°
+</b>
+
+</div>
+
+
+<div class="num">
+
+Gamma
+
+<b id="gamma">
+0.0°
+</b>
+
+</div>
+
+
+<div class="num">
+
+F/B Δ
+
+<b id="fbDelta">
+0.0°
+</b>
+
+</div>
+
+
+<div class="num">
+
+L/R Δ
+
+<b id="lrDelta">
+0.0°
+</b>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<section class="card">
+
+<strong>
+ESP32 connection
+</strong>
+
+
+<p>
+
+MQTT:
+
+<span
+  id="mqttStatus"
+  class="disconnected"
+>
+
+CONNECTING...
+
+</span>
+
+</p>
+
+
+<div
+  id="command"
+  class="command-box"
+>
+
+FWD 0 |
+BACK 0 |
+LEFT 0 |
+RIGHT 0 |
+BRAKE 0
+
+</div>
+
+
+<p class="small">
+
+Phone → MQTT → ESP32 → PC817 → Original Remote
+
+</p>
+
+</section>
+
+
+
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+
 <script>
+
 (() => {
-const $=id=>document.getElementById(id);
-const startBtn=$('startBtn'),neutralBtn=$('neutralBtn'),brakeBtn=$('brakeBtn'),speedBtn=$('speedBtn'),stopBtn=$('stopBtn'),resumeBtn=$('resumeBtn');
-const fbThreshold=$('fbThreshold'),lrThreshold=$('lrThreshold'),fbThresholdValue=$('fbThresholdValue'),lrThresholdValue=$('lrThresholdValue');
-const driveState=$('driveState'),betaEl=$('beta'),gammaEl=$('gamma'),fbDeltaEl=$('fbDelta'),lrDeltaEl=$('lrDelta'),commandEl=$('command'),mqttStatus=$('mqttStatus');
-let enabled=false,stopped=false,braking=false,haveSensor=false;
-let neutralBeta=0,neutralGamma=0,beta=0,gamma=0;
-let currentForward=false,currentBackward=false,currentLeft=false,currentRight=false;
-const baseTopic="toycar/8f3a91c7e2b64d10";
-const forwardTopic=baseTopic+"/forward",backwardTopic=baseTopic+"/backward",leftTopic=baseTopic+"/left",rightTopic=baseTopic+"/right",brakeTopic=baseTopic+"/brake",speedTopic=baseTopic+"/speed";
-const mqttClient=mqtt.connect("wss://broker.hivemq.com:8884/mqtt",{clientId:"ToyCarPhone-"+Math.random().toString(16).slice(2),reconnectPeriod:2000,connectTimeout:10000});
-function publish(topic,on){if(mqttClient.connected)mqttClient.publish(topic,on?"1":"0")}
-function publishAllOff(){publish(forwardTopic,false);publish(backwardTopic,false);publish(leftTopic,false);publish(rightTopic,false);publish(brakeTopic,false);publish(speedTopic,false)}
-function publishMotion(){publish(forwardTopic,currentForward);publish(backwardTopic,currentBackward);publish(leftTopic,currentLeft);publish(rightTopic,currentRight);publish(brakeTopic,braking)}
-mqttClient.on("connect",()=>{mqttStatus.textContent="CONNECTED";mqttStatus.className="connected";publishAllOff()});
-mqttClient.on("reconnect",()=>{mqttStatus.textContent="RECONNECTING...";mqttStatus.className="disconnected"});
-mqttClient.on("close",()=>{mqttStatus.textContent="DISCONNECTED";mqttStatus.className="disconnected"});
-mqttClient.on("error",()=>{mqttStatus.textContent="ERROR";mqttStatus.className="disconnected"});
-function setMotionState(forward,backward,left,right){
- if(stopped||braking){forward=false;backward=false;left=false;right=false}
- if(forward&&backward){forward=false;backward=false}
- if(left&&right){left=false;right=false}
- currentForward=forward;currentBackward=backward;currentLeft=left;currentRight=right;
- driveState.classList.remove("go","stop");
- if(stopped){driveState.textContent="STOPPED";driveState.classList.add("stop")}
- else if(braking){driveState.textContent="BRAKE";driveState.classList.add("stop")}
- else{const p=[];if(forward)p.push("FORWARD");if(backward)p.push("BACKWARD");if(left)p.push("LEFT");if(right)p.push("RIGHT");driveState.textContent=p.length?p.join(" + "):"NEUTRAL";if(p.length)driveState.classList.add("go")}
- commandEl.textContent=`FWD ${forward?1:0} | BACK ${backward?1:0} | LEFT ${left?1:0} | RIGHT ${right?1:0} | BRAKE ${braking?1:0}`;
- publishMotion();
+
+
+// ======================================
+// PAGE ELEMENTS
+// ======================================
+
+const $ =
+  id => document.getElementById(id);
+
+
+const startBtn =
+  $("startBtn");
+
+const neutralBtn =
+  $("neutralBtn");
+
+const brakeBtn =
+  $("brakeBtn");
+
+const speedBtn =
+  $("speedBtn");
+
+const stopBtn =
+  $("stopBtn");
+
+const resumeBtn =
+  $("resumeBtn");
+
+
+const fbThreshold =
+  $("fbThreshold");
+
+const lrThreshold =
+  $("lrThreshold");
+
+
+const fbThresholdValue =
+  $("fbThresholdValue");
+
+const lrThresholdValue =
+  $("lrThresholdValue");
+
+
+const driveState =
+  $("driveState");
+
+
+const betaEl =
+  $("beta");
+
+const gammaEl =
+  $("gamma");
+
+
+const fbDeltaEl =
+  $("fbDelta");
+
+const lrDeltaEl =
+  $("lrDelta");
+
+
+const commandEl =
+  $("command");
+
+
+const mqttStatus =
+  $("mqttStatus");
+
+
+
+// ======================================
+// PHONE STATE
+// ======================================
+
+let enabled =
+  false;
+
+let stopped =
+  false;
+
+let braking =
+  false;
+
+
+let haveSensor =
+  false;
+
+
+let neutralBeta =
+  0;
+
+let neutralGamma =
+  0;
+
+
+let beta =
+  0;
+
+let gamma =
+  0;
+
+
+
+// ======================================
+// CURRENT MOVEMENT STATE
+// ======================================
+
+let currentForward =
+  false;
+
+let currentBackward =
+  false;
+
+let currentLeft =
+  false;
+
+let currentRight =
+  false;
+
+
+
+// ======================================
+// MQTT TOPICS
+// ======================================
+
+const baseTopic =
+  "toycar/8f3a91c7e2b64d10";
+
+
+const forwardTopic =
+  baseTopic + "/forward";
+
+const backwardTopic =
+  baseTopic + "/backward";
+
+const leftTopic =
+  baseTopic + "/left";
+
+const rightTopic =
+  baseTopic + "/right";
+
+const brakeTopic =
+  baseTopic + "/brake";
+
+const speedTopic =
+  baseTopic + "/speed";
+
+
+
+// ======================================
+// MQTT CONNECTION
+// ======================================
+
+const mqttClient =
+  mqtt.connect(
+
+    "wss://broker.hivemq.com:8884/mqtt",
+
+    {
+
+      clientId:
+
+        "ToyCarPhone-" +
+
+        Math.random()
+          .toString(16)
+          .slice(2),
+
+
+      reconnectPeriod:
+        2000,
+
+
+      connectTimeout:
+        10000
+
+    }
+
+  );
+
+
+
+// ======================================
+// MQTT CONNECTED
+// ======================================
+
+mqttClient.on(
+
+  "connect",
+
+  () => {
+
+    mqttStatus.textContent =
+      "CONNECTED";
+
+
+    mqttStatus.className =
+      "connected";
+
+
+    publishAllOff();
+
+  }
+
+);
+
+
+
+// ======================================
+// MQTT RECONNECTING
+// ======================================
+
+mqttClient.on(
+
+  "reconnect",
+
+  () => {
+
+    mqttStatus.textContent =
+      "RECONNECTING...";
+
+
+    mqttStatus.className =
+      "disconnected";
+
+  }
+
+);
+
+
+
+// ======================================
+// MQTT CLOSED
+// ======================================
+
+mqttClient.on(
+
+  "close",
+
+  () => {
+
+    mqttStatus.textContent =
+      "DISCONNECTED";
+
+
+    mqttStatus.className =
+      "disconnected";
+
+  }
+
+);
+
+
+
+// ======================================
+// MQTT ERROR
+// ======================================
+
+mqttClient.on(
+
+  "error",
+
+  error => {
+
+    console.log(
+      "MQTT error:",
+      error
+    );
+
+
+    mqttStatus.textContent =
+      "ERROR";
+
+
+    mqttStatus.className =
+      "disconnected";
+
+  }
+
+);
+
+
+
+// ======================================
+// PUBLISH ONE COMMAND
+// ======================================
+
+function publish(
+  topic,
+  on
+) {
+
+  if (
+    !mqttClient.connected
+  ) {
+
+    return;
+
+  }
+
+
+  mqttClient.publish(
+
+    topic,
+
+    on
+      ? "1"
+      : "0"
+
+  );
+
 }
-function update(){
- const fbDelta=neutralBeta-beta,lrDelta=gamma-neutralGamma;
- fbDeltaEl.textContent=fbDelta.toFixed(1)+"°";lrDeltaEl.textContent=lrDelta.toFixed(1)+"°";
- if(!enabled||!haveSensor||stopped||braking){setMotionState(false,false,false,false);return}
- const fbLimit=Number(fbThreshold.value),lrLimit=Number(lrThreshold.value);
- let f=false,b=false,l=false,r=false;
- if(fbDelta>=fbLimit)f=true;else if(fbDelta<=-fbLimit)b=true;
- if(lrDelta<=-lrLimit)l=true;else if(lrDelta>=lrLimit)r=true;
- setMotionState(f,b,l,r);
+
+
+
+// ======================================
+// PUBLISH CURRENT MOTION
+// ======================================
+
+function publishMotion() {
+
+  publish(
+    forwardTopic,
+    currentForward
+  );
+
+
+  publish(
+    backwardTopic,
+    currentBackward
+  );
+
+
+  publish(
+    leftTopic,
+    currentLeft
+  );
+
+
+  publish(
+    rightTopic,
+    currentRight
+  );
+
+
+  publish(
+    brakeTopic,
+    braking
+  );
+
 }
-function onOrientation(e){if(typeof e.beta!=="number")return;haveSensor=true;beta=e.beta;gamma=typeof e.gamma==="number"?e.gamma:0;betaEl.textContent=beta.toFixed(1)+"°";gammaEl.textContent=gamma.toFixed(1)+"°";update()}
-async function start(){try{if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){const permission=await DeviceOrientationEvent.requestPermission();if(permission!=="granted"){driveState.textContent="PERMISSION DENIED";driveState.classList.add("stop");return}}window.addEventListener("deviceorientation",onOrientation,true);enabled=true;stopped=false;braking=false;startBtn.textContent="Tilt Control Active";update()}catch(error){driveState.textContent="SENSOR ERROR";driveState.classList.add("stop");commandEl.textContent=String(error)}}
-startBtn.addEventListener("click",start);
-neutralBtn.addEventListener("click",()=>{neutralBeta=beta;neutralGamma=gamma;stopped=false;braking=false;update()});
-stopBtn.addEventListener("click",()=>{stopped=true;braking=false;setMotionState(false,false,false,false);publishAllOff()});
-resumeBtn.addEventListener("click",()=>{stopped=false;braking=false;update()});
-brakeBtn.addEventListener("pointerdown",e=>{e.preventDefault();stopped=false;braking=true;setMotionState(false,false,false,false)});
-["pointerup","pointercancel","pointerleave"].forEach(n=>brakeBtn.addEventListener(n,()=>{braking=false;publish(brakeTopic,false);update()}));
-speedBtn.addEventListener("click",()=>{if(stopped||!mqttClient.connected)return;publish(speedTopic,true);setTimeout(()=>publish(speedTopic,false),150)});
-fbThreshold.addEventListener("input",()=>{fbThresholdValue.textContent=fbThreshold.value;update()});
-lrThreshold.addEventListener("input",()=>{lrThresholdValue.textContent=lrThreshold.value;update()});
-setInterval(()=>{if(mqttClient.connected)publishMotion()},250);
-document.addEventListener("visibilitychange",()=>{if(document.hidden){stopped=true;braking=false;setMotionState(false,false,false,false);publishAllOff()}});
-if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+
+
+
+// ======================================
+// TURN EVERYTHING OFF
+// ======================================
+
+function publishAllOff() {
+
+  publish(
+    forwardTopic,
+    false
+  );
+
+
+  publish(
+    backwardTopic,
+    false
+  );
+
+
+  publish(
+    leftTopic,
+    false
+  );
+
+
+  publish(
+    rightTopic,
+    false
+  );
+
+
+  publish(
+    brakeTopic,
+    false
+  );
+
+
+  publish(
+    speedTopic,
+    false
+  );
+
+}
+
+
+
+// ======================================
+// SET MOTION STATE
+// ======================================
+
+function setMotionState(
+  forward,
+  backward,
+  left,
+  right
+) {
+
+
+  // Brake or emergency stop
+  // kills movement.
+
+  if (
+    stopped ||
+    braking
+  ) {
+
+    forward =
+      false;
+
+    backward =
+      false;
+
+    left =
+      false;
+
+    right =
+      false;
+
+  }
+
+
+
+  // Never allow Forward
+  // and Backward together.
+
+  if (
+    forward &&
+    backward
+  ) {
+
+    forward =
+      false;
+
+    backward =
+      false;
+
+  }
+
+
+
+  // Never allow Left
+  // and Right together.
+
+  if (
+    left &&
+    right
+  ) {
+
+    left =
+      false;
+
+    right =
+      false;
+
+  }
+
+
+
+  // ==================================
+  // LAG REDUCTION
+  // ==================================
+
+  const stateChanged =
+
+    forward !== currentForward ||
+
+    backward !== currentBackward ||
+
+    left !== currentLeft ||
+
+    right !== currentRight;
+
+
+
+  // Store new state
+
+  currentForward =
+    forward;
+
+  currentBackward =
+    backward;
+
+  currentLeft =
+    left;
+
+  currentRight =
+    right;
+
+
+
+  // ==================================
+  // PHONE DISPLAY
+  // ==================================
+
+  driveState.classList.remove(
+    "go",
+    "stop"
+  );
+
+
+
+  if (
+    stopped
+  ) {
+
+    driveState.textContent =
+      "STOPPED";
+
+
+    driveState.classList.add(
+      "stop"
+    );
+
+  }
+
+
+  else if (
+    braking
+  ) {
+
+    driveState.textContent =
+      "BRAKE";
+
+
+    driveState.classList.add(
+      "stop"
+    );
+
+  }
+
+
+  else {
+
+    const parts =
+      [];
+
+
+    if (
+      forward
+    ) {
+
+      parts.push(
+        "FORWARD"
+      );
+
+    }
+
+
+    if (
+      backward
+    ) {
+
+      parts.push(
+        "BACKWARD"
+      );
+
+    }
+
+
+    if (
+      left
+    ) {
+
+      parts.push(
+        "LEFT"
+      );
+
+    }
+
+
+    if (
+      right
+    ) {
+
+      parts.push(
+        "RIGHT"
+      );
+
+    }
+
+
+
+    if (
+      parts.length === 0
+    ) {
+
+      driveState.textContent =
+        "NEUTRAL";
+
+    }
+
+
+    else {
+
+      driveState.textContent =
+        parts.join(
+          " + "
+        );
+
+
+      driveState.classList.add(
+        "go"
+      );
+
+    }
+
+  }
+
+
+
+  commandEl.textContent =
+
+    "FWD " +
+    (
+      forward
+        ? "1"
+        : "0"
+    )
+
+    +
+
+    " | BACK " +
+    (
+      backward
+        ? "1"
+        : "0"
+    )
+
+    +
+
+    " | LEFT " +
+    (
+      left
+        ? "1"
+        : "0"
+    )
+
+    +
+
+    " | RIGHT " +
+    (
+      right
+        ? "1"
+        : "0"
+    )
+
+    +
+
+    " | BRAKE " +
+    (
+      braking
+        ? "1"
+        : "0"
+    );
+
+
+
+  // ==================================
+  // SEND IMMEDIATELY ONLY
+  // WHEN STATE CHANGES
+  // ==================================
+
+  if (
+    stateChanged
+  ) {
+
+    publishMotion();
+
+  }
+
+}
+
+
+
+// ======================================
+// PROCESS PHONE TILT
+// ======================================
+
+function update() {
+
+
+  const fbDelta =
+
+    neutralBeta -
+    beta;
+
+
+
+  const lrDelta =
+
+    gamma -
+    neutralGamma;
+
+
+
+  fbDeltaEl.textContent =
+
+    fbDelta.toFixed(1) +
+    "°";
+
+
+
+  lrDeltaEl.textContent =
+
+    lrDelta.toFixed(1) +
+    "°";
+
+
+
+  if (
+
+    !enabled ||
+
+    !haveSensor ||
+
+    stopped ||
+
+    braking
+
+  ) {
+
+
+    setMotionState(
+      false,
+      false,
+      false,
+      false
+    );
+
+
+    return;
+
+  }
+
+
+
+  const fbLimit =
+
+    Number(
+      fbThreshold.value
+    );
+
+
+
+  const lrLimit =
+
+    Number(
+      lrThreshold.value
+    );
+
+
+
+  let forward =
+    false;
+
+
+  let backward =
+    false;
+
+
+  let left =
+    false;
+
+
+  let right =
+    false;
+
+
+
+  // ==================================
+  // FORWARD / BACKWARD
+  // ==================================
+
+  if (
+    fbDelta >=
+    fbLimit
+  ) {
+
+    forward =
+      true;
+
+  }
+
+
+  else if (
+
+    fbDelta <=
+    -fbLimit
+
+  ) {
+
+    backward =
+      true;
+
+  }
+
+
+
+  // ==================================
+  // LEFT / RIGHT
+  // ==================================
+
+  if (
+
+    lrDelta <=
+    -lrLimit
+
+  ) {
+
+    left =
+      true;
+
+  }
+
+
+  else if (
+
+    lrDelta >=
+    lrLimit
+
+  ) {
+
+    right =
+      true;
+
+  }
+
+
+
+  setMotionState(
+
+    forward,
+    backward,
+    left,
+    right
+
+  );
+
+}
+
+
+
+// ======================================
+// PHONE ORIENTATION
+// ======================================
+
+function onOrientation(e) {
+
+
+  if (
+
+    typeof e.beta !==
+    "number"
+
+  ) {
+
+    return;
+
+  }
+
+
+
+  haveSensor =
+    true;
+
+
+
+  beta =
+    e.beta;
+
+
+
+  gamma =
+
+    typeof e.gamma ===
+    "number"
+
+      ? e.gamma
+
+      : 0;
+
+
+
+  betaEl.textContent =
+
+    beta.toFixed(1) +
+    "°";
+
+
+
+  gammaEl.textContent =
+
+    gamma.toFixed(1) +
+    "°";
+
+
+
+  update();
+
+}
+
+
+
+// ======================================
+// START TILT CONTROL
+// ======================================
+
+async function start() {
+
+
+  try {
+
+
+    if (
+
+      typeof DeviceOrientationEvent !==
+      "undefined"
+
+      &&
+
+      typeof DeviceOrientationEvent
+        .requestPermission ===
+      "function"
+
+    ) {
+
+
+      const permission =
+
+        await DeviceOrientationEvent
+          .requestPermission();
+
+
+
+      if (
+
+        permission !==
+        "granted"
+
+      ) {
+
+
+        driveState.textContent =
+          "PERMISSION DENIED";
+
+
+        driveState.classList.add(
+          "stop"
+        );
+
+
+        return;
+
+      }
+
+    }
+
+
+
+    window.addEventListener(
+
+      "deviceorientation",
+
+      onOrientation,
+
+      true
+
+    );
+
+
+
+    enabled =
+      true;
+
+
+    stopped =
+      false;
+
+
+    braking =
+      false;
+
+
+
+    startBtn.textContent =
+      "Tilt Control Active";
+
+
+
+    update();
+
+  }
+
+
+  catch(error) {
+
+
+    driveState.textContent =
+      "SENSOR ERROR";
+
+
+    driveState.classList.add(
+      "stop"
+    );
+
+
+    commandEl.textContent =
+      String(error);
+
+  }
+
+}
+
+
+
+// ======================================
+// START BUTTON
+// ======================================
+
+startBtn.addEventListener(
+
+  "click",
+
+  start
+
+);
+
+
+
+// ======================================
+// SET NEUTRAL
+// ======================================
+
+neutralBtn.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    neutralBeta =
+      beta;
+
+
+    neutralGamma =
+      gamma;
+
+
+    stopped =
+      false;
+
+
+    braking =
+      false;
+
+
+    update();
+
+  }
+
+);
+
+
+
+// ======================================
+// EMERGENCY STOP
+// ======================================
+
+stopBtn.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    stopped =
+      true;
+
+
+    braking =
+      false;
+
+
+
+    setMotionState(
+      false,
+      false,
+      false,
+      false
+    );
+
+
+
+    publishAllOff();
+
+  }
+
+);
+
+
+
+// ======================================
+// RESUME
+// ======================================
+
+resumeBtn.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    stopped =
+      false;
+
+
+    braking =
+      false;
+
+
+    update();
+
+  }
+
+);
+
+
+
+// ======================================
+// BRAKE BUTTON
+// ======================================
+
+brakeBtn.addEventListener(
+
+  "pointerdown",
+
+  event => {
+
+
+    event.preventDefault();
+
+
+    stopped =
+      false;
+
+
+    braking =
+      true;
+
+
+
+    setMotionState(
+      false,
+      false,
+      false,
+      false
+    );
+
+
+    publish(
+      brakeTopic,
+      true
+    );
+
+  }
+
+);
+
+
+
+[
+  "pointerup",
+  "pointercancel",
+  "pointerleave"
+]
+
+.forEach(
+
+  eventName => {
+
+
+    brakeBtn.addEventListener(
+
+      eventName,
+
+      () => {
+
+
+        braking =
+          false;
+
+
+        publish(
+          brakeTopic,
+          false
+        );
+
+
+        update();
+
+      }
+
+    );
+
+  }
+
+);
+
+
+
+// ======================================
+// SPEED +
+// ======================================
+//
+// One tap = one speed-cycle press.
+//
+
+speedBtn.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    if (
+
+      stopped ||
+
+      !mqttClient.connected
+
+    ) {
+
+      return;
+
+    }
+
+
+
+    publish(
+      speedTopic,
+      true
+    );
+
+
+
+    setTimeout(
+
+      () => {
+
+
+        publish(
+          speedTopic,
+          false
+        );
+
+
+      },
+
+      150
+
+    );
+
+  }
+
+);
+
+
+
+// ======================================
+// F/B THRESHOLD
+// ======================================
+
+fbThreshold.addEventListener(
+
+  "input",
+
+  () => {
+
+
+    fbThresholdValue.textContent =
+      fbThreshold.value;
+
+
+    update();
+
+  }
+
+);
+
+
+
+// ======================================
+// LEFT / RIGHT THRESHOLD
+// ======================================
+
+lrThreshold.addEventListener(
+
+  "input",
+
+  () => {
+
+
+    lrThresholdValue.textContent =
+      lrThreshold.value;
+
+
+    update();
+
+  }
+
+);
+
+
+
+// ======================================
+// MQTT HEARTBEAT
+// ======================================
+//
+// Only every 250 ms.
+// This keeps ESP32 failsafe alive.
+//
+// Sensor movement itself does NOT
+// flood MQTT anymore.
+//
+
+setInterval(
+
+  () => {
+
+
+    if (
+      !mqttClient.connected
+    ) {
+
+      return;
+
+    }
+
+
+    publishMotion();
+
+  },
+
+  250
+
+);
+
+
+
+// ======================================
+// APP HIDDEN = STOP
+// ======================================
+
+document.addEventListener(
+
+  "visibilitychange",
+
+  () => {
+
+
+    if (
+      document.hidden
+    ) {
+
+
+      stopped =
+        true;
+
+
+      braking =
+        false;
+
+
+
+      setMotionState(
+        false,
+        false,
+        false,
+        false
+      );
+
+
+
+      publishAllOff();
+
+    }
+
+  }
+
+);
+
+
+
+// ======================================
+// SERVICE WORKER
+// ======================================
+
+if (
+
+  "serviceWorker"
+  in navigator
+
+) {
+
+
+  navigator
+
+    .serviceWorker
+
+    .register(
+      "./sw.js"
+    )
+
+    .catch(
+      () => {}
+    );
+
+}
+
+
 })();
+
 </script>
+
 </main>
+
 </body>
+
 </html>
